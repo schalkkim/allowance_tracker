@@ -1,6 +1,6 @@
 # Kim Schalk
 # 22/08/2022
-# Child Selection Window Design - Version 1
+# Child Selection Window Design - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -14,6 +14,15 @@ font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
 background_colour = "#93c47d"
 button_colour = "#d9ead3"
 
+# Child Images
+nikau_image = Image.open("nikau_profile_icon.png")
+tia_image = Image.open("tia_profile_icon.png")
+hana_image = Image.open("hana_profile_icon.png")
+
+# List of Children
+children = [["nikau", "nikau_profile_icon.png", 98.00, nikau_image], ["hana", "hana_profile_icon.png", 98.00, hana_image],
+            ["tia", "tia_profile_icon.png", 98.00, tia_image]]
+
 # Keypad Window
 root = Tk()
 root.title("Allowance Tracker")
@@ -25,35 +34,24 @@ help_button = Button(root, image=help_image, fg="black", bg=background_colour, a
                      font=("Comfortaa", 12), bd=0, relief="solid")
 help_button.grid(row=0, column=0, pady=7, padx=7, sticky=E)
 
-# Child Resized Images
-nikau_image = Image.open("nikau_profile_icon.png")
-nikau_image = nikau_image.resize((40, 40))
-nikau_icon = ImageTk.PhotoImage(nikau_image)
-tia_image = Image.open("tia_profile_icon.png")
-tia_image = tia_image.resize((40, 40))
-tia_icon = ImageTk.PhotoImage(tia_image)
-hana_image = Image.open("hana_profile_icon.png")
-hana_image = hana_image.resize((40, 40))
-hana_icon = ImageTk.PhotoImage(hana_image)
+# Child buttons in a loop
+row = 1
+for child in children:
+    # Resizing Images
+    child[3] = child[3].resize((40, 40))
+    child[3] = ImageTk.PhotoImage(child[3])
 
-# Child Buttons
-nikau_frame = Frame(root, bd=1, relief="solid", bg=button_colour)
-nikau_frame.grid(row=1, column=0, ipadx=3, padx=10, pady=5)
-nikau_button = Button(nikau_frame, text="  Nikau - $98.00", image=nikau_icon, compound=LEFT, fg="black",
-                      bg=button_colour, font=("Comfortaa", 12), bd=0, relief="solid", anchor="w")
-nikau_button.grid(row=1, column=0, pady=5, padx=10, ipadx=23, ipady=4)
-
-tia_frame = Frame(root, bd=1, relief="solid", bg=button_colour)
-tia_frame.grid(row=2, column=0, ipadx=3, padx=10, pady=5)
-tia_button = Button(tia_frame, text="  Tia - $98.00", image=tia_icon, compound=LEFT, fg="black", bg=button_colour,
+    # Buttons
+    button_frame = Frame(root, bd=1, relief="solid", bg=button_colour)
+    button_frame.grid(row=row, column=0, ipadx=3, padx=10, pady=5)
+    text = "  {} - ${:.2f}".format(child[0].capitalize(), child[2])
+    button = Button(button_frame, text=text, image=child[3], compound=LEFT, fg="black", bg=button_colour,
                     font=("Comfortaa", 12), bd=0, relief="solid", anchor="w")
-tia_button.grid(row=2, column=0, pady=5, padx=10, ipadx=35, ipady=4)
-
-hana_frame = Frame(root, bd=1, relief="solid", bg=button_colour)
-hana_frame.grid(row=3, column=0, ipadx=3, padx=10, pady=(5, 20))
-hana_button = Button(hana_frame, text="  Hana - $98.00", image=hana_icon, compound=LEFT, fg="black", bg=button_colour,
-                     font=("Comfortaa", 12), bd=0, relief="solid", anchor="w")
-hana_button.grid(row=3, column=0, pady=5, padx=10, ipadx=24, ipady=4)
+    button.grid(row=0, column=0, pady=5, padx=10, ipady=4)
+    button.config(width=185)
+    if child == children[-1]:
+        button_frame.grid(pady=(5, 20))
+    row += 1
 
 # End of Program
 root.mainloop()
