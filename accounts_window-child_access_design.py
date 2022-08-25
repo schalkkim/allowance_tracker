@@ -61,6 +61,7 @@ chosen_month = StringVar()
 chosen_month.set("Sort By Date")
 sort_by_date_dropdown = OptionMenu(root, chosen_month, *months)
 sort_by_date_dropdown.grid(row=5, column=1)
+sort_by_date_dropdown.config(bg=button_colour, font=("Comfortaa", 8), bd=1, relief="solid")
 
 # Past Transactions with Scrollbar
 transactions_frame = Frame(root)
