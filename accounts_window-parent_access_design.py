@@ -1,6 +1,6 @@
 # Kim Schalk
 # 24/08/2022
-# Accounts Window - Parent Access - Version 1
+# Accounts Window - Parent Access - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -75,41 +75,21 @@ transactions_scrollbar.grid(row=0, column=1, sticky=NS)
 transactions_canvas.configure(yscrollcommand=transactions_scrollbar.set)
 transactions_labels_frame = Frame(transactions_canvas)
 transactions_canvas.create_window((0, 0), window=transactions_labels_frame, anchor="nw")
-transaction1_background = Label(transactions_labels_frame, bd=0, bg="#f3f3f3")
-transaction1_background.grid(row=0, column=0, columnspan=2, ipady=3)
-transaction1_background.config(width=28)
-transaction1_label = Label(transactions_labels_frame, text="Jacket", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction1_label.grid(row=0, column=0, sticky="w")
-transaction1_cost_label = Label(transactions_labels_frame, text="-$98.00 ", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction1_cost_label.grid(row=0, column=1, sticky="e")
-transaction2_background = Label(transactions_labels_frame, bd=0, bg="#d9d9d9")
-transaction2_background.grid(row=1, column=0, columnspan=2, ipady=3)
-transaction2_background.config(width=28)
-transaction2_label = Label(transactions_labels_frame, text="Scarf", font=("Comfortaa", 10), bd=0, bg="#d9d9d9")
-transaction2_label.grid(row=1, column=0, sticky="w")
-transaction2_cost_label = Label(transactions_labels_frame, text="-$12.00 ", font=("Comfortaa", 10), bd=0, bg="#d9d9d9")
-transaction2_cost_label.grid(row=1, column=1, sticky="e")
-transaction3_background = Label(transactions_labels_frame, bd=0, bg="#f3f3f3")
-transaction3_background.grid(row=2, column=0, columnspan=2, ipady=3)
-transaction3_background.config(width=28)
-transaction3_label = Label(transactions_labels_frame, text="Tennis Shoes", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction3_label.grid(row=2, column=0, sticky="w")
-transaction3_cost_label = Label(transactions_labels_frame, text="-$120.00 ", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction3_cost_label.grid(row=2, column=1, sticky="e")
-transaction4_background = Label(transactions_labels_frame, bd=0, bg="#d9d9d9")
-transaction4_background.grid(row=3, column=0, columnspan=2, ipady=3)
-transaction4_background.config(width=28)
-transaction4_label = Label(transactions_labels_frame, text="Scarf", font=("Comfortaa", 10), bd=0, bg="#d9d9d9")
-transaction4_label.grid(row=3, column=0, sticky="w")
-transaction4_cost_label = Label(transactions_labels_frame, text="-$12.00 ", font=("Comfortaa", 10), bd=0, bg="#d9d9d9")
-transaction4_cost_label.grid(row=3, column=1, sticky="e")
-transaction5_background = Label(transactions_labels_frame, bd=0, bg="#f3f3f3")
-transaction5_background.grid(row=4, column=0, columnspan=2, ipady=3)
-transaction5_background.config(width=28)
-transaction5_label = Label(transactions_labels_frame, text="Tennis Shoes", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction5_label.grid(row=4, column=0, sticky="w")
-transaction5_cost_label = Label(transactions_labels_frame, text="-$120.00 ", font=("Comfortaa", 10), bd=0, bg="#f3f3f3")
-transaction5_cost_label.grid(row=4, column=1, sticky="e")
+row = 0
+for transaction in range(1, 6):
+    if transaction % 2 == 0:
+        colour = "#d3d3d3"
+    else:
+        colour = "#f3f3f3"
+    transaction_background = Label(transactions_labels_frame, bd=0, bg=colour)
+    transaction_background.grid(row=row, column=0, columnspan=2, ipady=3)
+    transaction_background.config(width=28)
+    transaction_label = Label(transactions_labels_frame, text="Tennis Shoes", font=("Comfortaa", 10), bd=0, bg=colour)
+    transaction_label.grid(row=row, column=0, sticky="w")
+    transaction_cost_label = Label(transactions_labels_frame, text="-$123.00 ", font=("Comfortaa", 10), bd=0, bg=colour)
+    transaction_cost_label.grid(row=row, column=1, sticky="e")
+    row += 1
+
 # Allows resizing of labels
 transactions_labels_frame.update_idletasks()
 # Change size of the box
