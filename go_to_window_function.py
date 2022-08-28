@@ -1,6 +1,6 @@
 # Kim Schalk
 # 26/08/2022
-# Go to Window Function - Version 1
+# Go to Window Function - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -20,12 +20,12 @@ root.configure(bg=background_colour)
 
 # Open a New Window
 def go_to_window(button):
-    new_window = Toplevel()
+    new_window = Tk()
+    new_window.title("Allowance Tracker")
     new_window.config(bg=background_colour)
+    root.destroy()
     def close_window(button):
-        button.config(state=NORMAL)
         new_window.destroy()
-    button.config(state=DISABLED)
     new_window.protocol("WM_DELETE_WINDOW", lambda: close_window(button))
 
 # Help Button
