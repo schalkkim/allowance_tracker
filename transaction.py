@@ -1,6 +1,6 @@
 # Kim Schalk
 # 30/08/2022
-# Transaction - Version 1
+# Transaction - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -41,11 +41,11 @@ class MainWindow:
 
     @staticmethod
     def go_to_transaction(partner):
-        Transaction()
+        Transaction(partner)
 
 
 class Transaction:
-    def __init__(self):
+    def __init__(self, partner):
         self.transaction_window = Toplevel()
         self.transaction_window.config(bg=background_colour)
 
@@ -53,14 +53,14 @@ class Transaction:
         self.amount_entry.grid(row=0, column=0, padx=10, pady=10)
 
         self.enter_button = Button(self.transaction_window, text="Enter", bg=button_colour, font=("Comfortaa", 12),
-                                   bd=1, relief="solid", command=self.decrease_amount)
+                                   bd=1, relief="solid", command=lambda: self.decrease_amount(partner))
         self.enter_button.grid(row=1, column=0, padx=10, pady=10)
 
-    def decrease_amount(self):
-        entry = int(self.amount_entry.get())
+    def decrease_amount(self, partner):
+        entry = float(self.amount_entry.get())
         global amount
         amount -= entry
-        print(amount)
+        partner.money.set("${:.2f}".format(amount))
 
 
 # main routine
