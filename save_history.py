@@ -1,6 +1,6 @@
 # Kim Schalk
 # 01/09/2022
-# Save History - Version 1
+# Save History - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -88,6 +88,7 @@ class TransactionWindow:
         partner.transaction_label.grid(row=row, column=0, sticky="w")
         partner.transaction_cost_label = Label(partner.transactions_labels_frame, text="-${:.2f} ".format(amount), font=("Comfortaa", 10), bd=0, bg=colour)
         partner.transaction_cost_label.grid(row=row, column=1, sticky="e")
+        partner.transactions_canvas.config(scrollregion=partner.transactions_canvas.bbox("all"))
 
         row += 1
 
