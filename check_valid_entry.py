@@ -1,6 +1,6 @@
 # Kim Schalk
 # 07/09/2022
-# Check Valid Entry - Version 1
+# Check Valid Entry - Version 2
 
 # Import Libraries
 from tkinter import *
@@ -13,6 +13,7 @@ font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
 # Colours used in the program
 background_colour = "#93c47d"
 button_colour = "#d9ead3"
+
 
 class MainWindow:
     def __init__(self):
@@ -28,13 +29,19 @@ class MainWindow:
 
         self.main_window.mainloop()
 
-    def check_valid_entry(self, partner):
+    @staticmethod
+    def check_valid_entry(partner):
         try:
-            amount = float(partner.item_entry.get())
+            amount = partner.item_entry.get()
+            if amount[0] == "$":
+                amount = float(amount[1:])
+                print(amount)
+            else:
+                amount = float(amount)
         except ValueError:
             messagebox.showerror("Error", "Not a valid entry")
+
 
 # main routine
 if __name__ == "__main__":
     MainWindow()
-
