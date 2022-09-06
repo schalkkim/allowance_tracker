@@ -1,6 +1,6 @@
 # Kim Schalk
 # 07/09/2022
-# Check Valid Entry - Version 2
+# Check Valid Entry - Version 3
 
 # Import Libraries
 from tkinter import *
@@ -13,6 +13,9 @@ font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
 # Colours used in the program
 background_colour = "#93c47d"
 button_colour = "#d9ead3"
+
+# Money in account
+account = 123
 
 
 class MainWindow:
@@ -33,11 +36,18 @@ class MainWindow:
     def check_valid_entry(partner):
         try:
             amount = partner.item_entry.get()
+            # Check for dollar sign in front of number
             if amount[0] == "$":
                 amount = float(amount[1:])
                 print(amount)
             else:
                 amount = float(amount)
+
+            # Check if amount is less than balance
+            global account
+            if amount > account:
+                messagebox.showerror("Error", "Cannot afford this")
+
         except ValueError:
             messagebox.showerror("Error", "Not a valid entry")
 
