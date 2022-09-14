@@ -1,6 +1,6 @@
 # Kim Schalk
 # 09/06/2022
-# Main Program - Version 3 - Child Access
+# Main Program - Version 4 - Parent Access
 
 # Import Libraries
 from tkinter import *
@@ -25,9 +25,9 @@ tia_image = Image.open("tia_profile_icon.png")
 hana_image = Image.open("hana_profile_icon.png")
 
 # Child Information
-child_information = [["Nikau", "nikau_profile_icon.png", 98.00, nikau_image, "0000"],
+child_information = [["Nikau", "nikau_profile_icon.png", 102.00, nikau_image, "0000"],
                      ["Hana", "hana_profile_icon.png", 98.00, hana_image, "4567"],
-                     ["Tia", "tia_profile_icon.png", 98.00, tia_image, "8765"]]
+                     ["Tia", "tia_profile_icon.png", 56.00, tia_image, "8765"]]
 
 
 # Keypad window
@@ -56,46 +56,29 @@ class Keypad:
         self.password_label.grid(row=0, column=0, ipadx=5, ipady=3, pady=1, padx=1)
         self.password_label.config(width=24)
 
-        # Buttons 1-9
+        # Buttons 1-9 in a loop
         self.button_frame = Frame(self.keypad_window, bg=background_colour)
         self.button_frame.grid(row=2, column=0, columnspan=3, padx=15, pady=10)
+        row = 0
+        column = 0
+        for button in range(1, 10):
+            self.numbered_button = Button(self.button_frame, text=button, fg="black", bg=keypad_buttons_colour,
+                                     font=("Comfortaa", 12), bd=1, relief="solid",
+                                     command=lambda number=button: self.pin_number(self, number))
+            if button == 4:
+                row += 1
+            elif button == 7:
+                row += 1
 
-        self.one_button = Button(self.button_frame, text="1", fg="black", bg=keypad_buttons_colour,
-                                 font=("Comfortaa", 12), bd=1, relief="solid",
-                                 command=lambda: self.pin_number(self, "1"))
-        self.one_button.grid(row=0, column=0, ipadx=19, padx=7, pady=7)
-        self.two_button = Button(self.button_frame, text="2", fg="black", bg=keypad_buttons_colour,
-                                 font=("Comfortaa", 12), bd=1, relief="solid",
-                                 command=lambda: self.pin_number(self, "2"))
-        self.two_button.grid(row=0, column=1, ipadx=17, padx=7, pady=7)
-        self.three_button = Button(self.button_frame, text="3", fg="black", bg=keypad_buttons_colour,
-                                   font=("Comfortaa", 12), bd=1, relief="solid",
-                                   command=lambda: self.pin_number(self, "3"))
-        self.three_button.grid(row=0, column=2, ipadx=17, padx=7, pady=7)
-        self.four_button = Button(self.button_frame, text="4", fg="black", bg=keypad_buttons_colour,
-                                  font=("Comfortaa", 12), bd=1, relief="solid",
-                                  command=lambda: self.pin_number(self, "4"))
-        self.four_button.grid(row=1, column=0, ipadx=17, padx=7, pady=7)
-        self.five_button = Button(self.button_frame, text="5", fg="black", bg=keypad_buttons_colour,
-                                  font=("Comfortaa", 12), bd=1, relief="solid",
-                                  command=lambda: self.pin_number(self, "5"))
-        self.five_button.grid(row=1, column=1, ipadx=17, padx=7, pady=7)
-        self.six_button = Button(self.button_frame, text="6", fg="black", bg=keypad_buttons_colour,
-                                 font=("Comfortaa", 12), bd=1, relief="solid",
-                                 command=lambda: self.pin_number(self, "6"))
-        self.six_button.grid(row=1, column=2, ipadx=17, padx=7, pady=7)
-        self.seven_button = Button(self.button_frame, text="7", fg="black", bg=keypad_buttons_colour,
-                                   font=("Comfortaa", 12), bd=1, relief="solid",
-                                   command=lambda: self.pin_number(self, "7"))
-        self.seven_button.grid(row=2, column=0, ipadx=17, padx=7, pady=7)
-        self.eight_button = Button(self.button_frame, text="8", fg="black", bg=keypad_buttons_colour,
-                                   font=("Comfortaa", 12), bd=1, relief="solid",
-                                   command=lambda: self.pin_number(self, "8"))
-        self.eight_button.grid(row=2, column=1, ipadx=17, padx=7, pady=7)
-        self.nine_button = Button(self.button_frame, text="9", fg="black", bg=keypad_buttons_colour,
-                                  font=("Comfortaa", 12), bd=1, relief="solid",
-                                  command=lambda: self.pin_number(self, "9"))
-        self.nine_button.grid(row=2, column=2, ipadx=17, padx=7, pady=7)
+            if button == 1:
+                ipadx = 19
+            else:
+                ipadx = 17
+
+            self.numbered_button.grid(row=row, column=column, ipadx=ipadx, padx=7, pady=7)
+            column += 1
+            if column == 3:
+                column = 0
 
         # Other Buttons (Delete, 0, and Enter)
         self.delete_button = Button(self.button_frame, text="Delete", fg="black", bg=keypad_buttons_colour,
@@ -116,8 +99,7 @@ class Keypad:
     @staticmethod
     def pin_number(partner, number):
         global pin_number
-        pin_number += number
-        print(pin_number)
+        pin_number += str(number)
         partner.asterixes.set(partner.asterixes.get() + "* ")
 
     @staticmethod
@@ -133,14 +115,13 @@ class Keypad:
         for child in child_information:
             if pin_number in child:
                 self.access = False
-                print(child)
                 self.child = child
                 partner.keypad_window.destroy()
                 Account(self)
         if pin_number == parent_access_pin:
             self.access = True
             partner.keypad_window.destroy()
-            Account(self)
+            ChildSelection(self)
         else:
             self.delete(partner)
 
@@ -347,6 +328,52 @@ class Account:
     @staticmethod
     def go_to_help(partner):
         HelpWindow(partner)
+
+
+class ChildSelection:
+    def __init__(self, partner):
+        self.child_selection_window = Tk()
+        self.child_selection_window.title("Allowance Tracker")
+        self.child_selection_window.config(bg=background_colour)
+
+        # Help Button
+        self.help_image = PhotoImage(file="help_image.png")
+        self.help_button = Button(self.child_selection_window, image=self.help_image, fg="black", bg=background_colour,
+                                  activebackground=background_colour, font=("Comfortaa", 12), bd=0, relief="solid",
+                                  command=lambda: self.go_to_help(self))
+        self.help_button.grid(row=0, column=0, pady=7, padx=7, sticky=E)
+
+        # Child buttons in a loop
+        row = 1
+        for child in child_information:
+            d = {}
+
+            # Resizing Images
+            child[3] = child[3].resize((40, 40))
+            child[3] = ImageTk.PhotoImage(child[3])
+
+            # Buttons
+            self.button_frame = Frame(self.child_selection_window, bd=1, relief="solid", bg=button_colour)
+            self.button_frame.grid(row=row, column=0, ipadx=3, padx=10, pady=5)
+            text = "  {} - ${:.2f}".format(child[0].capitalize(), child[2])
+            self.name_button = Button(self.button_frame, text=text, image=child[3], compound=LEFT, fg="black",
+                                      bg=button_colour, font=("Comfortaa", 12), bd=0, relief="solid", anchor="w",
+                                      command=lambda name=child[0]: self.go_to_account(self, name))
+            self.name_button.grid(row=0, column=0, pady=5, padx=10, ipady=4)
+            self.name_button.config(width=185)
+            if child == child_information[-1]:
+                self.button_frame.grid(pady=(5, 20))
+            row += 1
+
+        # End of Program
+        self.child_selection_window.mainloop()
+
+    @staticmethod
+    def go_to_help(partner):
+        HelpWindow(partner)
+
+    def go_to_account(self, partner, name):
+        print(name)
 
 
 # main routine
