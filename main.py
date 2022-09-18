@@ -1,6 +1,6 @@
 # Kim Schalk
 # 09/06/2022
-# Main Program - Version 4 - Parent Access
+# Main Program - Version 5 - Parent Access (Account)
 
 # Import Libraries
 from tkinter import *
@@ -19,15 +19,17 @@ keypad_buttons_colour = "#efefef"
 parent_access_pin = "1234"
 pin_number = ""
 
-# Images
-nikau_image = Image.open("nikau_profile_icon.png")
-tia_image = Image.open("tia_profile_icon.png")
-hana_image = Image.open("hana_profile_icon.png")
-
 # Child Information
-child_information = [["Nikau", "nikau_profile_icon.png", 102.00, nikau_image, "0000"],
-                     ["Hana", "hana_profile_icon.png", 98.00, hana_image, "4567"],
-                     ["Tia", "tia_profile_icon.png", 56.00, tia_image, "8765"]]
+child_information = [["Nikau", "nikau_profile_icon.png", 102.00, "0000"],
+                     ["Hana", "hana_profile_icon.png", 98.01, "4567"],
+                     ["Tia", "tia_profile_icon.png", 56.00, "8765"]]
+
+# Images
+for child in child_information:
+    child.append(Image.open(child[1]))
+
+for child in child_information:
+    child[4] = child[4].resize((45, 45))
 
 
 # Keypad window
@@ -63,8 +65,8 @@ class Keypad:
         column = 0
         for button in range(1, 10):
             self.numbered_button = Button(self.button_frame, text=button, fg="black", bg=keypad_buttons_colour,
-                                     font=("Comfortaa", 12), bd=1, relief="solid",
-                                     command=lambda number=button: self.pin_number(self, number))
+                                          font=("Comfortaa", 12), bd=1, relief="solid",
+                                          command=lambda number=button: self.pin_number(self, number))
             if button == 4:
                 row += 1
             elif button == 7:
@@ -116,6 +118,7 @@ class Keypad:
             if pin_number in child:
                 self.access = False
                 self.child = child
+                print(self.child)
                 partner.keypad_window.destroy()
                 Account(self)
         if pin_number == parent_access_pin:
@@ -204,18 +207,21 @@ class Account:
         self.account_window.title("Allowance Tracker")
         self.account_window.configure(bg=background_colour)
 
+        if partner.access:
+            self.account_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window(self, partner))
+
         # Profile Image
-        self.child_image = partner.child[3].resize((50, 50))
-        self.child_image = ImageTk.PhotoImage(self.child_image)
-        self.image_panel = Label(self.account_window, image=self.child_image, bg=background_colour)
+        partner.child.append(ImageTk.PhotoImage(partner.child[4]))
+        self.image_panel = Label(self.account_window, image=partner.child[-1], bg=background_colour)
         self.image_panel.grid(row=0, column=0, padx=5, pady=(20, 0))
 
-        self.name_label = Label(self.account_window, text=partner.child[0], font=("Comfortaa", 25, "bold"), bg=background_colour)
+        self.name_label = Label(self.account_window, text=partner.child[0], font=("Comfortaa", 25, "bold"),
+                                bg=background_colour)
         self.name_label.grid(row=0, column=1, padx=5, pady=(20, 0), sticky="w")
 
         # Help Button
-        help_image = PhotoImage(file="help_image.png")
-        self.help_button = Button(self.account_window, image=help_image, fg="black", bg=background_colour,
+        self.help_image = PhotoImage(file="help_image.png")
+        self.help_button = Button(self.account_window, image=self.help_image, fg="black", bg=background_colour,
                                   activebackground=background_colour, font=("Comfortaa", 12), bd=0, relief="solid",
                                   command=lambda: self.go_to_help(self))
         self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
@@ -329,12 +335,19 @@ class Account:
     def go_to_help(partner):
         HelpWindow(partner)
 
+    def close_window(self, partner, partner2):
+        partner.account_window.destroy()
+        self.access = partner2.access
+        ChildSelection(self)
+
 
 class ChildSelection:
     def __init__(self, partner):
         self.child_selection_window = Tk()
         self.child_selection_window.title("Allowance Tracker")
         self.child_selection_window.config(bg=background_colour)
+
+        self.access = partner.access
 
         # Help Button
         self.help_image = PhotoImage(file="help_image.png")
@@ -346,17 +359,14 @@ class ChildSelection:
         # Child buttons in a loop
         row = 1
         for child in child_information:
-            d = {}
-
             # Resizing Images
-            child[3] = child[3].resize((40, 40))
-            child[3] = ImageTk.PhotoImage(child[3])
+            child.append(ImageTk.PhotoImage(child[4]))
 
             # Buttons
             self.button_frame = Frame(self.child_selection_window, bd=1, relief="solid", bg=button_colour)
             self.button_frame.grid(row=row, column=0, ipadx=3, padx=10, pady=5)
             text = "  {} - ${:.2f}".format(child[0].capitalize(), child[2])
-            self.name_button = Button(self.button_frame, text=text, image=child[3], compound=LEFT, fg="black",
+            self.name_button = Button(self.button_frame, text=text, image=child[-1], compound=LEFT, fg="black",
                                       bg=button_colour, font=("Comfortaa", 12), bd=0, relief="solid", anchor="w",
                                       command=lambda name=child[0]: self.go_to_account(self, name))
             self.name_button.grid(row=0, column=0, pady=5, padx=10, ipady=4)
@@ -373,9 +383,15 @@ class ChildSelection:
         HelpWindow(partner)
 
     def go_to_account(self, partner, name):
-        print(name)
+        self.access = True
+        for child in child_information:
+            if name in child:
+                self.child = child
+        partner.child_selection_window.destroy()
+        Account(self)
 
 
 # main routine
 if __name__ == "__main__":
     Keypad()
+
