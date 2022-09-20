@@ -1,6 +1,6 @@
 # Kim Schalk
 # 09/06/2022
-# Main Program - Version 6 - Transaction
+# Main Program - Version 7 - Payment
 
 # Import Libraries
 from tkinter import *
@@ -312,13 +312,14 @@ class Account:
         self.button_frame.grid(row=7, column=0, columnspan=3, pady=(0, 20))
         self.add_transaction_button = Button(self.button_frame, text="Add Transaction", bg=button_colour,
                                              font=("Comfortaa", 9), bd=0, relief="solid",
-                                             command=lambda: self.transaction(access, child))
+                                             command=lambda: self.transaction(access, child, False))
         self.add_transaction_button.grid(row=0, column=0, padx=(1, 1), pady=(1, 1))
         self.add_transaction_button.config(width="13")
 
         if access:
             self.add_payment_button = Button(self.button_frame, text="Add Payment", bg=button_colour,
-                                             font=("Comfortaa", 9), bd=0, relief="solid")
+                                             font=("Comfortaa", 9), bd=0, relief="solid",
+                                             command=lambda: self.transaction(True, child, True))
             self.add_payment_button.grid(row=0, column=1, padx=(0, 1), pady=(1, 1))
             self.add_payment_button.config(width="13")
             self.statistics_button = Button(self.button_frame, text="Statistics", bg=button_colour,
@@ -341,8 +342,8 @@ class Account:
     def go_to_help(self):
         HelpWindow(self)
 
-    def transaction(self, access, child):
-        Transaction(self, access, child)
+    def transaction(self, access, child, payment):
+        Transaction(self, access, child, payment)
 
     def close_window(self):
         self.account_window.destroy()
@@ -401,7 +402,7 @@ class ChildSelection:
 
 
 class Transaction:
-    def __init__(self, partner, access, child):
+    def __init__(self, partner, access, child, payment):
         self.transaction_window = Toplevel()
         self.transaction_window.config(bg=background_colour)
 
@@ -409,7 +410,12 @@ class Transaction:
         self.image_panel = Label(self.transaction_window, image=child[-1], bg=background_colour)
         self.image_panel.grid(row=0, column=0, padx=5, pady=(20, 0))
 
-        self.name_label = Label(self.transaction_window, text="Transaction", font=("Comfortaa", 25, "bold"),
+        if payment:
+            title = "Payment"
+        else:
+            title = "Transaction"
+
+        self.name_label = Label(self.transaction_window, text=title, font=("Comfortaa", 25, "bold"),
                                 bg=background_colour)
         self.name_label.grid(row=0, column=1, padx=5, pady=(20, 0), sticky="w")
 
@@ -421,13 +427,17 @@ class Transaction:
         self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
 
         # Input Labels and Entries
-        self.item_label = Label(self.transaction_window, text="Item:", bg=background_colour,
+        if payment:
+            reason = "Reason:"
+        else:
+            reason = "Item:"
+        self.item_label = Label(self.transaction_window, text=reason, bg=background_colour,
                                 font=("Comfortaa", 12, "bold"))
         self.item_label.grid(row=1, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
         self.item_entry = Entry(self.transaction_window, font=("Comfortaa", 10), bd=1)
         self.item_entry.grid(row=2, column=0, columnspan=3, padx=15)
         self.item_entry.config(width=40)
-        self.cost_label = Label(self.transaction_window, text="Cost:", bg=background_colour,
+        self.cost_label = Label(self.transaction_window, text="Amount:", bg=background_colour,
                                 font=("Comfortaa", 12, "bold"))
         self.cost_label.grid(row=3, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
         self.cost_entry = Entry(self.transaction_window, font=("Comfortaa", 10), bd=1)
@@ -435,13 +445,18 @@ class Transaction:
         self.cost_entry.config(width=40)
 
         self.enter_button = Button(self.transaction_window, text="Enter", bg=button_colour, font=("Comfortaa", 12),
-                                   bd=1, relief="solid", command=lambda: self.add_transaction(partner, access, child))
+                                   bd=1, relief="solid",
+                                   command=lambda: self.add_transaction(partner, access, child, payment))
         self.enter_button.grid(row=5, column=0, columnspan=3, pady=(30, 20), ipadx=25)
 
-    def add_transaction(self, partner, access, child):
+    def add_transaction(self, partner, access, child, payment):
         cost = float(self.cost_entry.get())
-        child[2] = str(float(child[2]) - cost)
-        transaction1 = [self.item_entry.get(), self.cost_entry.get()]
+        if payment:
+            child[2] = str(float(child[2]) + cost)
+            transaction1 = [self.item_entry.get(), "+" + self.cost_entry.get()]
+        else:
+            child[2] = str(float(child[2]) - cost)
+            transaction1 = [self.item_entry.get(), "-" + self.cost_entry.get()]
         child[4].append(transaction1)
         self.transaction_window.destroy()
         partner.account_window.destroy()
