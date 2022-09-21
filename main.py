@@ -1,6 +1,6 @@
 # Kim Schalk
 # 09/06/2022
-# Main Program - Version 7 - Payment
+# Main Program - Version 8 - Export
 
 # Import Libraries
 from tkinter import *
@@ -327,7 +327,7 @@ class Account:
             self.statistics_button.grid(row=1, column=0, padx=(1, 1), pady=(0, 1))
             self.statistics_button.config(width="13", state=DISABLED)
             self.export_button = Button(self.button_frame, text="Export", bg=button_colour, font=("Comfortaa", 9), bd=0,
-                                        relief="solid")
+                                        relief="solid", command=lambda: self.export(child))
             self.export_button.grid(row=1, column=1, padx=(0, 1), pady=(0, 1))
             self.export_button.config(width="13")
         else:
@@ -349,6 +349,8 @@ class Account:
         self.account_window.destroy()
         ChildSelection()
 
+    def export(self, child):
+        Export(self, child)
 
 class ChildSelection:
     def __init__(self):
@@ -461,6 +463,57 @@ class Transaction:
         self.transaction_window.destroy()
         partner.account_window.destroy()
         Account(access, child)
+
+
+class Export:
+    def __init__(self, partner, child):
+        self.export_window = Toplevel()
+        self.export_window.config(bg=background_colour)
+
+        partner.export_button.config(state=DISABLED)
+        self.export_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window(partner))
+
+        child.append(ImageTk.PhotoImage(child[5]))
+        self.image_panel = Label(self.export_window, image=child[-1], bg=background_colour)
+        self.image_panel.grid(row=0, column=0, padx=5, pady=(20, 0))
+
+        self.name_label = Label(self.export_window, text="Export", font=("Comfortaa", 25, "bold"), bg=background_colour)
+        self.name_label.grid(row=0, column=1, padx=5, pady=(20, 10), sticky="w")
+
+        # Help Button
+        help_image = PhotoImage(file="help_image.png")
+        self.help_button = Button(self.export_window, image=help_image, fg="black", bg=background_colour,
+                                  activebackground=background_colour,
+                                  font=("Comfortaa", 12), bd=0, relief="solid")
+        self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
+
+        export_text = """Enter the name of the file you would 
+like to save the document as, it cannot 
+contain any of the following 
+characters: /\:*?”<>| and it cannot 
+have the same name as an existing file."""
+        self.export_label = Label(self.export_window, text=export_text, bg=background_colour, font=("Comfortaa", 8), justify=LEFT)
+        self.export_label.grid(row=1, column=0, columnspan=3, padx=20, pady=5)
+
+        self.filename_entry = Entry(self.export_window, bd=1)
+        self.filename_entry.grid(row=2, column=0, columnspan=3, padx=5, pady=10)
+        self.filename_entry.config(width=35)
+        self.enter_button = Button(self.export_window, text="Enter", bg=button_colour, font=("Comfortaa", 12), bd=1,
+                                   relief="solid", command=lambda: self.export(partner, child))
+        self.enter_button.grid(row=3, column=0, columnspan=3, pady=10, ipadx=25)
+
+    def export(self, partner, child):
+        filename = "{}.txt".format(self.filename_entry.get())
+        file = open(filename, "w")
+        for transactions in child[4]:
+            file.write("{}, ${}".format(transactions[0], transactions[1]))
+            file.write("\n")
+        file.close()
+        self.close_window(partner)
+
+    def close_window(self, partner):
+        self.export_window.destroy()
+        partner.export_button.config(state=ACTIVE)
 
 
 # main routine
