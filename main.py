@@ -1,6 +1,6 @@
 # Kim Schalk
 # 09/06/2022
-# Main Program - Version 8 - Export
+# Main Program - Version 9 - Error Handling/User Feedback
 
 # Import Libraries
 from tkinter import *
@@ -14,6 +14,8 @@ font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
 background_colour = "#93c47d"
 button_colour = "#d9ead3"
 keypad_buttons_colour = "#efefef"
+error_background_colour = "#f4cccc"
+error_border_colour = "#990000"
 
 # Pin Numbers
 parent_access_pin = "1234"
@@ -22,7 +24,7 @@ pin_number = ""
 # Child Information
 child_information = [["Nikau", "nikau_profile_icon.png", "102.00", "0000"],
                      ["Hana", "hana_profile_icon.png", "98.01", "4567"],
-                     ["Tia", "tia_profile_icon.png", "56.00", "8765"]]
+                     ["Tia", "tia_profile_icon.png", "46.00", "8765"]]
 
 # Transaction Lists
 for child in child_information:
@@ -32,7 +34,6 @@ for child in child_information:
 # Images
 for child in child_information:
     child.append(Image.open(child[1]))
-
 for child in child_information:
     child[5] = child[5].resize((45, 45))
 
@@ -57,9 +58,7 @@ class Keypad:
         self.asterixes = StringVar()
         self.asterixes.set("")
         self.password_label = Label(self.label_border, textvariable=self.asterixes, fg="black",
-                                    bg=keypad_buttons_colour,
-                                    font=("Inconsolata", 12),
-                                    bd=0)
+                                    bg=keypad_buttons_colour, font=("Inconsolata", 12), bd=0)
         self.password_label.grid(row=0, column=0, ipadx=5, ipady=3, pady=1, padx=1)
         self.password_label.config(width=24)
 
@@ -105,28 +104,41 @@ class Keypad:
     # Get pin number
     def pin_number(self, number):
         global pin_number
-        pin_number += str(number)
-        self.asterixes.set(self.asterixes.get() + "* ")
+        # Restricts pin to 4 numbers
+        if len(pin_number) < 4:
+            pin_number += str(number)
+            self.asterixes.set(self.asterixes.get() + "* ")
 
+    # Delete last digit of pin
     def delete(self):
         global pin_number
+        pin_number = pin_number[:-1]
         self.asterixes.set("")
-        pin_number = ""
+        for number in range(len(pin_number)):
+            self.asterixes.set(self.asterixes.get() + "* ")
 
+    # Check if pin is valid
     def enter(self):
         global parent_access_pin
         global child_information
         global pin_number
+        # Checks if pin is child or parent
         for child in child_information:
             if pin_number in child:
                 self.keypad_window.destroy()
                 Account(False, child)
+                pin = True
         if pin_number == parent_access_pin:
             self.keypad_window.destroy()
             ChildSelection()
-        else:
+            pin = True
+        # Error if pin not valid
+        if not pin:
+            self.password_label.config(bg=error_background_colour)
+            self.label_border.config(bg=error_border_colour)
             self.delete()
 
+    # Help Window
     def go_to_help(self):
         HelpWindow(self)
 
@@ -136,6 +148,7 @@ class HelpWindow:
         self.help_window = Toplevel()
         self.help_window.config(bg=background_colour)
 
+        # Disables help button
         partner.help_button.config(state=DISABLED)
         self.help_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window(partner))
 
@@ -204,6 +217,7 @@ class Account:
         self.account_window.title("Allowance Tracker")
         self.account_window.configure(bg=background_colour)
 
+        # Closes child selection window
         if access:
             self.account_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window())
 
@@ -235,17 +249,19 @@ class Account:
         self.amount_label = Label(self.account_window, textvariable=child[-1], bg=background_colour,
                                   font=("Comfortaa", 22))
         self.amount_label.grid(row=2, column=0, columnspan=3, pady=(0, 10))
-        self.bonus_frame = Frame(self.account_window, bg=button_colour)
-        self.bonus_frame.grid(row=3, column=0, columnspan=3, pady=(0, 10))
 
+        # Checks if child can receive the bonus
         if float(child[2]) > 50:
             bonus = "{} is on track for a bonus!".format(child[0])
+            bonus_colour = button_colour
         else:
-            bonus = "{} needs to earn money to get the bonus!".format(child[0])
-
-        self.bonus_label1 = Label(self.bonus_frame, text=bonus, bg=button_colour, font=("Comfortaa", 9))
+            bonus = "{} is not on track for a bonus!".format(child[0])
+            bonus_colour = error_background_colour
+        self.bonus_frame = Frame(self.account_window, bg=bonus_colour)
+        self.bonus_frame.grid(row=3, column=0, columnspan=3, pady=(0, 10))
+        self.bonus_label1 = Label(self.bonus_frame, text=bonus, bg=bonus_colour, font=("Comfortaa", 9))
         self.bonus_label1.grid(row=0, column=0, padx=20, pady=(5, 0))
-        self.bonus_label2 = Label(self.bonus_frame, text="Days until bonus: 46", bg=button_colour,
+        self.bonus_label2 = Label(self.bonus_frame, text="Days until bonus: 46", bg=bonus_colour,
                                   font=("Comfortaa", 9, "italic"))
         self.bonus_label2.grid(row=1, column=0, padx=20, pady=(0, 5))
 
@@ -253,9 +269,11 @@ class Account:
         self.transactions_label = Label(self.account_window, text="Previous Transactions:", bg=background_colour,
                                         font=("Comfortaa", 10, "bold"))
         self.transactions_label.grid(row=4, column=0, columnspan=3, sticky=W, pady=5, padx=5)
-        self.left_button = Button(self.account_window, text="ᐸ", bg=background_colour, font=("Comfortaa", 12), bd=0)
+        self.left_button = Button(self.account_window, text="ᐸ", bg=background_colour, font=("Comfortaa", 12), bd=0,
+                                  state=DISABLED)
         self.left_button.grid(row=5, column=0, sticky=E)
-        self.right_button = Button(self.account_window, text="ᐳ", bg=background_colour, font=("Comfortaa", 12), bd=0)
+        self.right_button = Button(self.account_window, text="ᐳ", bg=background_colour, font=("Comfortaa", 12), bd=0,
+                                   state=DISABLED)
         self.right_button.grid(row=5, column=2, sticky=W)
 
         months = ["August", "July", "June", "May"]
@@ -263,7 +281,7 @@ class Account:
         self.chosen_month.set("Sort By Date")
         self.sort_by_date_dropdown = OptionMenu(self.account_window, self.chosen_month, *months)
         self.sort_by_date_dropdown.grid(row=5, column=1)
-        self.sort_by_date_dropdown.config(bg=button_colour, font=("Comfortaa", 8), bd=1, relief="solid")
+        self.sort_by_date_dropdown.config(bg=button_colour, font=("Comfortaa", 8), bd=1, relief="solid", state=DISABLED)
 
         # Past Transactions with Scrollbar
         self.transactions_frame = Frame(self.account_window)
@@ -280,6 +298,7 @@ class Account:
         self.transactions_labels_frame = Frame(self.transactions_canvas)
         self.transactions_canvas.create_window((0, 0), window=self.transactions_labels_frame, anchor="nw")
 
+        # Displays transactions
         row = 0
         transactions = 0
         for transaction in child[4]:
@@ -312,14 +331,15 @@ class Account:
         self.button_frame.grid(row=7, column=0, columnspan=3, pady=(0, 20))
         self.add_transaction_button = Button(self.button_frame, text="Add Transaction", bg=button_colour,
                                              font=("Comfortaa", 9), bd=0, relief="solid",
-                                             command=lambda: self.transaction(access, child, False))
+                                             command=lambda: self.transaction(access, child, False, self.add_transaction_button))
         self.add_transaction_button.grid(row=0, column=0, padx=(1, 1), pady=(1, 1))
         self.add_transaction_button.config(width="13")
 
+        # Adds payment and export button depending on whether parent or child
         if access:
             self.add_payment_button = Button(self.button_frame, text="Add Payment", bg=button_colour,
                                              font=("Comfortaa", 9), bd=0, relief="solid",
-                                             command=lambda: self.transaction(True, child, True))
+                                             command=lambda: self.transaction(True, child, True, self.add_payment_button))
             self.add_payment_button.grid(row=0, column=1, padx=(0, 1), pady=(1, 1))
             self.add_payment_button.config(width="13")
             self.statistics_button = Button(self.button_frame, text="Statistics", bg=button_colour,
@@ -342,8 +362,8 @@ class Account:
     def go_to_help(self):
         HelpWindow(self)
 
-    def transaction(self, access, child, payment):
-        Transaction(self, access, child, payment)
+    def transaction(self, access, child, payment, button):
+        Transaction(self, access, child, payment, button)
 
     def close_window(self):
         self.account_window.destroy()
@@ -396,6 +416,7 @@ class ChildSelection:
         HelpWindow(self)
 
     def go_to_account(self, name):
+        # Decides which child is selected
         for child in child_information:
             if name in child:
                 person = child
@@ -404,14 +425,20 @@ class ChildSelection:
 
 
 class Transaction:
-    def __init__(self, partner, access, child, payment):
+    def __init__(self, partner, access, child, payment, button):
         self.transaction_window = Toplevel()
         self.transaction_window.config(bg=background_colour)
 
+        # Disables export button
+        button.config(state=DISABLED)
+        self.transaction_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window(partner, button))
+
+        # Profile image
         child.append(ImageTk.PhotoImage(child[5]))
         self.image_panel = Label(self.transaction_window, image=child[-1], bg=background_colour)
         self.image_panel.grid(row=0, column=0, padx=5, pady=(20, 0))
 
+        # Decides whether it is a payment or a transaction
         if payment:
             title = "Payment"
         else:
@@ -452,17 +479,44 @@ class Transaction:
         self.enter_button.grid(row=5, column=0, columnspan=3, pady=(30, 20), ipadx=25)
 
     def add_transaction(self, partner, access, child, payment):
-        cost = float(self.cost_entry.get())
-        if payment:
-            child[2] = str(float(child[2]) + cost)
-            transaction1 = [self.item_entry.get(), "+" + self.cost_entry.get()]
+        # Set entries back to original colour after error
+        self.item_entry.config(bg="white")
+        self.cost_entry.config(bg="white")
+        # Checks if item is less than 12 characters
+        if self.item_entry.get() == "" or len(self.item_entry.get()) > 12:
+            self.item_entry.config(bg=error_background_colour)
         else:
-            child[2] = str(float(child[2]) - cost)
-            transaction1 = [self.item_entry.get(), "-" + self.cost_entry.get()]
-        child[4].append(transaction1)
+            # Checks if it is valid number
+            try:
+                # Checks if there is a dollar sign in the entry and removes it
+                if self.cost_entry.get()[0] == "$":
+                    number = self.cost_entry.get()[1:]
+                else:
+                    number = self.cost_entry.get()
+                cost = float(number)
+                # Checks if entry is negative or greater than the amount in the account
+                if cost < 0 or cost > float(child[2]):
+                    self.cost_entry.config(bg=error_background_colour)
+                    self.cost_entry.delete(0, END)
+                else:
+                    # Decides whether to add or remove money
+                    if payment:
+                        child[2] = str(float(child[2]) + cost)
+                        transaction1 = [self.item_entry.get(), "+" + number]
+                    else:
+                        child[2] = str(float(child[2]) - cost)
+                        transaction1 = [self.item_entry.get(), "-" + number]
+                    child[4].append(transaction1)
+                    self.transaction_window.destroy()
+                    partner.account_window.destroy()
+                    Account(access, child)
+            except (ValueError, IndexError):
+                self.cost_entry.config(bg=error_background_colour)
+                self.cost_entry.delete(0, END)
+
+    def close_window(self, partner, button):
         self.transaction_window.destroy()
-        partner.account_window.destroy()
-        Account(access, child)
+        button.config(state=ACTIVE)
 
 
 class Export:
@@ -470,9 +524,11 @@ class Export:
         self.export_window = Toplevel()
         self.export_window.config(bg=background_colour)
 
+        # Disables export button
         partner.export_button.config(state=DISABLED)
         self.export_window.protocol("WM_DELETE_WINDOW", lambda: self.close_window(partner))
 
+        # Profile image
         child.append(ImageTk.PhotoImage(child[5]))
         self.image_panel = Label(self.export_window, image=child[-1], bg=background_colour)
         self.image_panel.grid(row=0, column=0, padx=5, pady=(20, 0))
@@ -487,6 +543,7 @@ class Export:
                                   font=("Comfortaa", 12), bd=0, relief="solid")
         self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
 
+        # Components
         export_text = """Enter the name of the file you would 
 like to save the document as, it cannot 
 contain any of the following 
@@ -503,13 +560,22 @@ have the same name as an existing file."""
         self.enter_button.grid(row=3, column=0, columnspan=3, pady=10, ipadx=25)
 
     def export(self, partner, child):
-        filename = "{}.txt".format(self.filename_entry.get())
-        file = open(filename, "w")
-        for transactions in child[4]:
-            file.write("{}, ${}".format(transactions[0], transactions[1]))
-            file.write("\n")
-        file.close()
-        self.close_window(partner)
+        # Sets entry to original colour
+        self.filename_entry.config(bg="white")
+        name = self.filename_entry.get()
+        # Checks if filename is valid
+        if "/" in name or "*" in name or "?" in name or "|" in name or "<" in name or ">" in name:
+            self.filename_entry.config(bg=error_background_colour)
+            self.filename_entry.delete(0, END)
+        else:
+            # Adds transactions to file
+            filename = "{}.txt".format(self.filename_entry.get())
+            file = open(filename, "w")
+            for transactions in child[4]:
+                file.write("{}, ${}".format(transactions[0], transactions[1]))
+                file.write("\n")
+            file.close()
+            self.close_window(partner)
 
     def close_window(self, partner):
         self.export_window.destroy()
