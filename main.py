@@ -455,6 +455,11 @@ class Transaction:
                                   font=("Comfortaa", 12), bd=0, relief="solid")
         self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
 
+        # Error message
+        self.error_message = Label(self.transaction_window, text="", bg=background_colour,
+                                   font=("Comfortaa", 1, "bold"), fg=error_border_colour, justify=CENTER)
+        self.error_message.grid(row=1, column=0, columnspan=3, padx=0, pady=0)
+
         # Input Labels and Entries
         if payment:
             reason = "Reason:"
@@ -462,29 +467,33 @@ class Transaction:
             reason = "Item:"
         self.item_label = Label(self.transaction_window, text=reason, bg=background_colour,
                                 font=("Comfortaa", 12, "bold"))
-        self.item_label.grid(row=1, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
+        self.item_label.grid(row=2, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
         self.item_entry = Entry(self.transaction_window, font=("Comfortaa", 10), bd=1)
-        self.item_entry.grid(row=2, column=0, columnspan=3, padx=15)
+        self.item_entry.grid(row=3, column=0, columnspan=3, padx=15)
         self.item_entry.config(width=40)
         self.cost_label = Label(self.transaction_window, text="Amount:", bg=background_colour,
                                 font=("Comfortaa", 12, "bold"))
-        self.cost_label.grid(row=3, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
+        self.cost_label.grid(row=4, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
         self.cost_entry = Entry(self.transaction_window, font=("Comfortaa", 10), bd=1)
-        self.cost_entry.grid(row=4, column=0, columnspan=3, padx=15)
+        self.cost_entry.grid(row=5, column=0, columnspan=3, padx=15)
         self.cost_entry.config(width=40)
 
         self.enter_button = Button(self.transaction_window, text="Enter", bg=button_colour, font=("Comfortaa", 12),
                                    bd=1, relief="solid",
                                    command=lambda: self.add_transaction(partner, access, child, payment))
-        self.enter_button.grid(row=5, column=0, columnspan=3, pady=(30, 20), ipadx=25)
+        self.enter_button.grid(row=6, column=0, columnspan=3, pady=(30, 20), ipadx=25)
 
     def add_transaction(self, partner, access, child, payment):
         # Set entries back to original colour after error
         self.item_entry.config(bg="white")
         self.cost_entry.config(bg="white")
+        self.error_message.config(text="", font=("Comfortaa", 1, "bold"))
+        self.error_message.grid(pady=0)
         # Checks if item is less than 12 characters
         if self.item_entry.get() == "" or len(self.item_entry.get()) > 12:
             self.item_entry.config(bg=error_background_colour)
+            self.error_message.config(text="Limit is 12 characters", font=("Comfortaa", 12, "bold"))
+            self.error_message.grid(pady=(10, 0))
         else:
             # Checks if it is valid number
             try:
@@ -498,6 +507,8 @@ class Transaction:
                 if cost < 0 or cost > float(child[2]):
                     self.cost_entry.config(bg=error_background_colour)
                     self.cost_entry.delete(0, END)
+                    self.error_message.config(text="Please enter a valid amount", font=("Comfortaa", 12, "bold"))
+                    self.error_message.grid(pady=(10, 0))
                 else:
                     # Decides whether to add or remove money
                     if payment:
@@ -513,6 +524,8 @@ class Transaction:
             except (ValueError, IndexError):
                 self.cost_entry.config(bg=error_background_colour)
                 self.cost_entry.delete(0, END)
+                self.error_message.config(text="Please enter a valid amount", font=("Comfortaa", 12, "bold"))
+                self.error_message.grid(pady=(10, 0))
 
     def close_window(self, partner, button):
         self.transaction_window.destroy()
@@ -543,6 +556,10 @@ class Export:
                                   font=("Comfortaa", 12), bd=0, relief="solid")
         self.help_button.grid(row=0, column=2, pady=7, padx=7, sticky=NE)
 
+        self.error_message = Label(self.export_window, text="", bg=background_colour,
+                                   font=("Comfortaa", 1, "bold"), fg=error_border_colour, justify=CENTER)
+        self.error_message.grid(row=1, column=0, columnspan=3, padx=0, pady=0)
+
         # Components
         export_text = """Enter the name of the file you would 
 like to save the document as, it cannot 
@@ -550,14 +567,14 @@ contain any of the following
 characters: /\:*?”<>| and it cannot 
 have the same name as an existing file."""
         self.export_label = Label(self.export_window, text=export_text, bg=background_colour, font=("Comfortaa", 8), justify=LEFT)
-        self.export_label.grid(row=1, column=0, columnspan=3, padx=20, pady=5)
+        self.export_label.grid(row=2, column=0, columnspan=3, padx=20, pady=5)
 
         self.filename_entry = Entry(self.export_window, bd=1)
-        self.filename_entry.grid(row=2, column=0, columnspan=3, padx=5, pady=10)
+        self.filename_entry.grid(row=3, column=0, columnspan=3, padx=5, pady=10)
         self.filename_entry.config(width=35)
         self.enter_button = Button(self.export_window, text="Enter", bg=button_colour, font=("Comfortaa", 12), bd=1,
                                    relief="solid", command=lambda: self.export(partner, child))
-        self.enter_button.grid(row=3, column=0, columnspan=3, pady=10, ipadx=25)
+        self.enter_button.grid(row=4, column=0, columnspan=3, pady=10, ipadx=25)
 
     def export(self, partner, child):
         # Sets entry to original colour
@@ -567,6 +584,8 @@ have the same name as an existing file."""
         if "/" in name or "*" in name or "?" in name or "|" in name or "<" in name or ">" in name:
             self.filename_entry.config(bg=error_background_colour)
             self.filename_entry.delete(0, END)
+            self.error_message.config(text="Invalid characters entered", font=("Comfortaa", 12, "bold"))
+            self.error_message.grid(pady=(10, 0))
         else:
             # Adds transactions to file
             filename = "{}.txt".format(self.filename_entry.get())
